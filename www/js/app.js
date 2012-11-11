@@ -51,6 +51,9 @@ ModuledApplication = Ember.Application.extend({
         }
       });
       app.loadCount--;
+      app.Navigation.links.pushObjects([
+        app.NavigationLink.create({ path: module.rootUrl, name: module.moduleName, isDivider: false }),
+      ]);
       app.callInit();
     });
 	},
@@ -124,20 +127,9 @@ App.NavigationLink = Ember.Object.extend({
 
 App.Navigation = Ember.Object.extend()
 App.Navigation.reopenClass({
-  _listOfLinks:  Em.A(),
+  links:  Em.A(),
   all: function() {
-    var allLinks = this._listOfLinks;
-
-    setTimeout( function(){
-      allLinks.clear();
-      
-      allLinks.pushObjects([
-        App.NavigationLink.create({ path: 'root.index', name: "Index", isDivider: false }),
-        App.NavigationLink.create({ isDivider: true }),
-        App.NavigationLink.create({ path: 'root.test', name: "Test", isDivider: false })
-      ]);
-    }, 10);
-    return this._listOfLinks;
+    return this.links;
   }
 });
 
@@ -145,4 +137,4 @@ App.ApplicationController = Ember.Controller.extend({
   navigation: App.Navigation.all()
 }),
 
-App.loadModules('js/test.js');
+App.loadModules(['js/test.js']);

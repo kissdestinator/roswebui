@@ -1,4 +1,6 @@
 var test = ApplicationModule.create({
+  moduleName: 'Test module',
+  rootUrl: 'root.test',
   templates: [
     'templates/test.handlebars'
   ],
