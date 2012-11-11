@@ -1,0 +1,19 @@
+<package>
+  <description brief="roswebui">
+
+     roswebui
+
+  </description>
+  <author>Matevz</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/roswebui</url>
+  <depend package="rospy"/>
+  <depend package="rosbridge_library"/>
+  <depend package="rosbridge_server"/>
+  <depend package="rosapi"/>
+  <depend package="roswww"/>
+
+</package>
+
+
