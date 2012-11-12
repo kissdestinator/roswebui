@@ -129,6 +129,7 @@ App.Navigation = Ember.Object.extend()
 App.Navigation.reopenClass({
   links:  Em.A(),
   all: function() {
+      this.links.insertAt(0, App.NavigationLink.create({ path: 'root.index', name: "Index", isDivider: false }));
     return this.links;
   }
 });
