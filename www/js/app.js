@@ -42,7 +42,7 @@ ModuledApplication = Ember.Application.extend({
     app.loadTemplates(module.templates, function() {
       Ember.A(Ember.keys(module)).forEach(function(property) {
         if (property == 'Router') {
-          var mixin = test.Router.PrototypeMixin;
+          var mixin = module.Router.PrototypeMixin;
           mixin.mixins.shift();
           App.RootRoute.reopen(mixin);
         } else if (property != 'templates') {
@@ -58,9 +58,9 @@ ModuledApplication = Ember.Application.extend({
     });
 	},
 
-  loadModules: function(modules) {
-    var arg = (typeof modules == 'string') ? modules : modules[0],
-        next = (typeof modules == 'string') ? '' : Array.prototype.slice.call(modules,1),
+  loadScripts: function(scripts, callback) {
+    var arg = (typeof scripts == 'string') ? scripts : scripts[0],
+        next = (typeof scripts == 'string') ? '' : Array.prototype.slice.call(scripts,1),
         app = this;
 
     app.loadCount++;
@@ -75,12 +75,13 @@ ModuledApplication = Ember.Application.extend({
       scriptObj.type = 'text/javascript';
       scriptObj.src = arg;
       scriptObj.onload = scriptObj.onreadystatechange = function() {
-        app.addModule(eval(arg.replace('.js', '').substring(arg.lastIndexOf('/')+1)));
         app.loadCount--;
+        if (callback)
+          callback();
         app.callInit();
       }
       document.head.appendChild(scriptObj);
-      if(next.length > 0) app.loadModules.apply(this, next);
+      if(next.length > 0) app.loadScripts.apply(this, next);
     }
   }
 });
@@ -138,4 +139,4 @@ App.ApplicationController = Ember.Controller.extend({
   navigation: App.Navigation.all()
 }),
 
-App.loadModules(['js/test.js']);
+App.loadScripts(['js/test.js']);
