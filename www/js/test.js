@@ -1,7 +1,7 @@
 (function(){
   App.addModule( 
     ApplicationModule.create({
-      moduleName: 'Test module',
+      moduleName: 'Nodes',
       rootUrl: 'root.test',
       templates: [
         'templates/test.handlebars'

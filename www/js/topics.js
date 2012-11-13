@@ -14,7 +14,6 @@
     }),
     TopicController: Ember.ObjectController.extend(),
   	Router: Ember.Router.extend({
-      loading: Ember.State.extend({}),
   		topics: Ember.Route.extend({
         route: '/topics',
         connectOutlets:  function(router, context){
@@ -36,7 +35,6 @@
           deserialize:  function(router, context){
             deferred = $.Deferred();
             topics.Topics.didLoad(context.slug, function() {
-              console.log(context.slug);
               deferred.resolve(topics.Topics.find(context.slug));
             });
             return deferred.promise();
@@ -81,6 +79,40 @@
       return this._type;
     }.property('_type'),
 
+    __subscribers_notify: 0,
+    subscribers: function() {
+      if(!this._subscribers) {
+        this._subscribers = Em.A();
+      }
+      var that = this;
+      var service = new App.ros.Service({
+        name        : '/rosapi/subscribers'
+      });
+      service.callService(new App.ros.ServiceRequest({'topic': this.name}), function(result) {
+        that._subscribers.clear();
+        that._subscribers.addObjects(result.subscribers);
+        that.set('__subscribers_notify', 1);
+      });
+      return this._subscribers;
+    }.property('__subscribers_notify'),
+
+    __publishers_notify: 0,
+    publishers: function() {
+      if(!this._publishers) {
+        this._publishers = Em.A();
+      }
+      var that = this;
+      var service = new App.ros.Service({
+        name        : '/rosapi/publishers'
+      });
+      service.callService(new App.ros.ServiceRequest({'topic': this.name}), function(result) {
+        that._publishers.clear();
+        that._publishers.addObjects(result.publishers);
+        that.set('__publishers_notify', 1);
+      });
+      return this._publishers;
+    }.property('__publishers_notify'),
+
     messageDetails: function() {
       if (!this._messageDetails) {
         this._messageDetails = Em.A();
@@ -106,6 +138,7 @@
               out = {
                 type: item.fieldtypes[i],
                 name: item.fieldnames[i],
+                isArray: (item.fieldarraylen[i] >= 0) ? true : false,
                 arraylen: item.fieldarraylen[i],
                 example: item.examples[i],
                 indent: indent ? ('indent' + indent) : '',

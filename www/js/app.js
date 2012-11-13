@@ -111,6 +111,7 @@ var App = ModuledApplication.create({
     templateName: 'index',
   }),
   RootRoute: Ember.Route.extend({
+    loading: Ember.State.extend(),
     index:  Ember.Route.extend({
       route:'/',
       connectOutlets:  function(router, context){
