@@ -1,0 +1,40 @@
+<h2>{{ name }}</h2>
+<ul class="nav nav-tabs">
+  <li class="active"><a href="#details" data-toggle="tab">Details</a></li>
+  <li><a href="#message_stream" data-toggle="tab">Message stream</a></li>
+  <li><a href="#send_message" data-toggle="tab">Send message</a></li>
+</ul>
+<div class="tab-content">
+  <div class="tab-pane active" id="details">
+    <h3>Message type: <small>{{ type }}</small></h3>
+
+    <table class="table table-collapsable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each field in messageDetails }}
+          <tr {{ bindAttr class="field.indent field.hasChild" }} {{ bindAttr data-parent="field.parent" }} {{ bindAttr data-name="field.name" }}>
+            <td>
+                {{#if field.hasChild }}
+                  <a href="#" {{action "messageExpand" on="click"}}><i class="icon-plus-sign"></i></a>
+                {{/if}}
+            {{ field.name }}
+            </td>
+            <td>{{ field.type }}</td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+
+  </div>
+  <div class="tab-pane" id="message_stream">
+    <p>Howdy, I'm in Section 2.</p>
+  </div>
+  <div class="tab-pane" id="send_message">
+    <p>Howdy, I'm in Section 3.</p>
+  </div>
+</div>

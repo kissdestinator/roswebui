@@ -1,3 +1,6 @@
 [submodule "www/bootstrap"]
 	path = www/bootstrap
 	url = git://github.com/twitter/bootstrap.git
+[submodule "www/rosjs"]
+	path = www/rosjs
+	url = git://github.com/RobotWebTools/rosjs.git

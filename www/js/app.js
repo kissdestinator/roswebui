@@ -1,3 +1,10 @@
+//utils
+if (typeof String.prototype.startsWith != 'function') {
+  String.prototype.startsWith = function (str){
+    return this.slice(0, str.length) == str;
+  };
+}
+
 ModuledApplication = Ember.Application.extend({
   loadCount: 0,
   autoinit: false,
@@ -7,16 +14,18 @@ ModuledApplication = Ember.Application.extend({
       this.initialize();
   },
 
-  urlForState: function(state) {
+  urlForState: function(state, params) {
     var currentState = Ember.get(this.router, 'currentState');
     var targetState = this.router.findStateByPath(currentState, state);
-    var hash = this.router.serializeRecursively(targetState, [], {});
+    var hash = this.router.serializeRecursively(targetState, params, {});
     return this.router.urlFor(state, hash);
   },
 
   loadTemplates: function(templates, callback) {
-    var arg = templates[0],
-        next = Array.prototype.slice.call(templates,1);
+    var arg = (typeof templates == 'string') ? templates : templates[0],
+        next = (typeof templates == 'string') ? '' : Array.prototype.slice.call(templates,1),
+        app = this;
+    
     if (arg === undefined)
       return;
     if (arg.length === 0)
@@ -30,8 +39,8 @@ ModuledApplication = Ember.Application.extend({
       $.get(arg, function(data){
         scriptObj.text = data;
         document.head.appendChild(scriptObj);
-        if(next.length > 0) loadTemplates.apply(this, next);
-        else callback();
+        if(next.length > 0) app.loadTemplates(next, callback);
+        else if (callback) callback();
       });
     }
   },
@@ -45,7 +54,7 @@ ModuledApplication = Ember.Application.extend({
           var mixin = module.Router.PrototypeMixin;
           mixin.mixins.shift();
           App.RootRoute.reopen(mixin);
-        } else if (property != 'templates') {
+        } else if (property != 'templates' && property != 'moduleName' && property != 'rootUrl') {
           Ember.assert("Application already contains property named " + property + "!", (Ember.A(Ember.keys(app)).indexOf(property) == -1));
           app[property] = module[property];
         }
@@ -119,7 +128,7 @@ App.Router = Ember.Router.extend({
 App.NavigationLink = Ember.Object.extend({
   appStateBinding: Ember.Binding.oneWay('App.router.currentState'),
   isActive: function() {
-    return App.get('router.currentPath') == this.path;
+    return App.get('router.currentPath').startsWith(this.path);
   }.property('appState'),
   url: function() {
     return this.path ? App.urlForState(this.path) : '';
@@ -139,4 +148,15 @@ App.ApplicationController = Ember.Controller.extend({
   navigation: App.Navigation.all()
 }),
 
+
+App.ros = new ROS();
+App.ros.on('error', function(error) {
+  console.log(error);
+});
+App.ros.connect('ws://192.168.1.115:9090'); // change to something dynamic
+
+
+
+
 App.loadScripts(['js/test.js']);
+App.loadScripts(['js/topics.js']);

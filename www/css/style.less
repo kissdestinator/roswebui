@@ -2,5 +2,34 @@ body {
 	padding-top: 60px;
 }
 .sidebar-nav {
-        padding: 9px 0;
-      }
+    padding: 9px 0;
+}
+
+.table-collapsable td:first-child,
+.table-collapsable th:first-child {
+	padding-left: 29px;
+}
+
+.table-collapsable .has-child td:first-child {
+	padding-left: 12px;
+}
+
+.indent (@level) {
+	display: none;
+	td:first-child {
+		padding-left: @level * 20px + 30px;
+	}
+
+	&.has-child td:first-child {
+		padding-left: @level * 20px + 12px;
+	}
+}
+
+.indent1 { .indent(1); }
+.indent2 { .indent(2); }
+.indent3 { .indent(3); }
+.indent4 { .indent(4); }
+.indent5 { .indent(5); }
+.indent6 { .indent(6); }
+.indent7 { .indent(7); }
+.indent8 { .indent(8); }

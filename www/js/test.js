@@ -1,5 +1,5 @@
 (function(){
-  App.addModule(
+  App.addModule( 
     ApplicationModule.create({
       moduleName: 'Test module',
       rootUrl: 'root.test',
@@ -21,6 +21,6 @@
           }
     		})
     	})
-    });
+    })
   );
 })();
