@@ -39,6 +39,13 @@
             });
             return deferred.promise();
           },
+          exit: function(router) {
+            //topics.topic.message_topic.unsubscribe();
+            //window.location.hash.split('/').get('lastObject')
+            var topic = topics.Topics.find(window.location.hash.split('/').get('lastObject'))
+            //alert(topic);
+            topic.unsubscribe();
+          },
           serialize:  function(router, context){
             return {
               slug: context.get('slug')
@@ -154,8 +161,59 @@
         });
       }
       return this._messageDetails;
-    }.property('_type')
+    }.property('_type'),
+
+    unsubscribe: function() {
+      //console.log(this.get('_type'));
+      this.message_topic.unsubscribe();
+    },
+
+    message_topic: new App.ros.Topic({
+              //type : this._type
+            }),
+
+    
   });
+
+topics.Topic.reopen({
+  messageStream: function() {
+      if (!this._stream) {
+        this._stream = Em.A();
+      }
+      if (this._type != '' && this._messageDetails) {
+        var that = this;
+        
+        this.message_topic.name = this.get('name');
+        console.log(this.message_topic);
+        this.message_topic.subscribe(function(message) {
+          // message is an instance of ros.Message.
+          
+          function createStream(message, level) {
+            var out = Em.A();
+            //console.log(message);
+            Ember.A(Ember.keys(message)).forEach(function(item) {
+              if ($.isPlainObject(message[item])) {
+                out.addObjects(createStream(message[item], level+1));
+              } else {
+                out.addObject({
+                  'name': item,
+                  'indent': level ? ('indent' + level) : '',
+                  'value': message[item]
+                });
+              }
+            });
+            return out;
+          }
+
+          that._stream = createStream(message, 0);
+
+          //console.log(that._stream);
+        });
+      }
+      return this._stream;
+    }.property()
+})
+
 
   topics.Topics = Ember.Object.extend();
   topics.Topics.reopenClass({
@@ -203,6 +261,7 @@
       }
     }
   });
+
 
   topics.TopicsController = Ember.Controller.extend({
     topics: topics.Topics.all()

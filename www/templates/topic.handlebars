@@ -45,7 +45,7 @@
                 {{/if}}
             {{ field.name }}
             </td>
-            <td>{{ field.type }}{{#if field.isArray }}[{{#if field.arraylen }}{{ field.arraylen }}{{/if}}]{{/if}}</td>
+            <td>{{ field.type }}{{#if field.isArray }}[{{#if field.arraylen }}{{ field.arraylen }}{{/if}}]{{/if}} {{field.value}}</td>
           </tr>
         {{/each}}
       </tbody>
@@ -53,7 +53,7 @@
 
   </div>
   <div class="tab-pane" id="message_stream">
-    <p>Howdy, I'm in Section 2.</p>
+    <p>{{ messageStream }}</p>
   </div>
   <div class="tab-pane" id="send_message">
     <p>Howdy, I'm in Section 3.</p>
