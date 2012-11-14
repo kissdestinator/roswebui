@@ -163,7 +163,7 @@ App.ros = new ROS();
 App.ros.on('error', function(error) {
   console.log(error);
 });
-App.ros.connect('ws://192.168.1.115:9090'); // change to something dynamic
+App.ros.connect('ws://10.0.2.15:9090'); // change to something dynamic
 
 
 
