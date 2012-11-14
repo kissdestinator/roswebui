@@ -53,7 +53,27 @@
           },
           messageExpand: function(router, event) {
             var src = $(event.srcElement);
-            $('[data-parent="' + src.parent().parent().parent().data('name') + '"]', src.parent().parent().parent().parent()).toggle();
+            var tr = src.parent().parent().parent()
+            var elms = $('[data-parent="' + tr.data('name') + '"]', tr.parent());
+            
+            if (src.hasClass('icon-minus-sign')) {
+              var i = elms.first().index();
+              console.log(tr.parent().find('> *').length);
+              while(i<tr.parent().find('*').length) {
+                var e = $('tr:nth-child(' + i + '):visible', tr.parent());
+                if (e.length) {
+                  if (elms.first().data('level') > e.data('level')) {
+                    break;
+                  }
+                  e.hide();
+                  e.find('i').toggleClass('icon-plus-sign', true).toggleClass('icon-minus-sign', false);
+                }
+                i++;
+              }
+            } else {
+              elms.toggle();
+            }
+
             src.toggleClass('icon-plus-sign').toggleClass('icon-minus-sign');
           }
         })

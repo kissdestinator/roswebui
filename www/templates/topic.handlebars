@@ -38,7 +38,7 @@
       </thead>
       <tbody>
         {{#each field in messageDetails }}
-          <tr {{ bindAttr class="field.indent field.hasChild" }} {{ bindAttr data-parent="field.parent" }} {{ bindAttr data-name="field.name" }}>
+          <tr {{ bindAttr class="field.indent field.hasChild" }} {{ bindAttr data-level="field.level" }} {{ bindAttr data-parent="field.parent" }} {{ bindAttr data-name="field.name" }}>
             <td>
                 {{#if field.hasChild }}
                   <a href="#" {{action "messageExpand" on="click"}}><i class="icon-plus-sign"></i></a>
