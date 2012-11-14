@@ -45,7 +45,7 @@
                 {{/if}}
             {{ field.name }}
             </td>
-            <td>{{ field.type }}{{#if field.isArray }}[{{#if field.arraylen }}{{ field.arraylen }}{{/if}}]{{/if}} {{field.value}}</td>
+            <td>{{ field.type }}{{#if field.isArray }}[{{#if field.arraylen }}{{ field.arraylen }}{{/if}}]{{/if}} {{field.val}}</td>
           </tr>
         {{/each}}
       </tbody>
@@ -53,7 +53,27 @@
 
   </div>
   <div class="tab-pane" id="message_stream">
-    <p>{{ messageStream }}</p>
+    <table class="table table-collapsable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each field in messageStream }}
+          <tr {{ bindAttr class="field.indent field.hasChild" }} {{ bindAttr data-parent="field.parent" }} {{ bindAttr data-name="field.name" }}>
+            <td>
+                {{#if field.hasChild }}
+                  <a href="#" {{action "messageExpand" on="click"}}><i class="icon-minus-sign"></i></a>
+                {{/if}}
+            {{ field.name }}{{#if field.isArray }}[]{{/if}}
+            </td>
+            <td>{{ field.val }}</td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
   </div>
   <div class="tab-pane" id="send_message">
     <p>Howdy, I'm in Section 3.</p>

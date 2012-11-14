@@ -15,7 +15,6 @@ body {
 }
 
 .indent (@level) {
-	display: none;
 	td:first-child {
 		padding-left: @level * 20px + 30px;
 	}
@@ -23,6 +22,17 @@ body {
 	&.has-child td:first-child {
 		padding-left: @level * 20px + 12px;
 	}
+}
+
+#details {
+	.indent1 { display: none; }
+	.indent2 { display: none; }
+	.indent3 { display: none; }
+	.indent4 { display: none; }
+	.indent5 { display: none; }
+	.indent6 { display: none; }
+	.indent7 { display: none; }
+	.indent8 { display: none; }
 }
 
 .indent1 { .indent(1); }

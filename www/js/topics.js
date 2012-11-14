@@ -12,7 +12,6 @@
     TopicView: Ember.View.extend({
       templateName: 'topic'
     }),
-    TopicController: Ember.ObjectController.extend(),
   	Router: Ember.Router.extend({
   		topics: Ember.Route.extend({
         route: '/topics',
@@ -39,12 +38,13 @@
             });
             return deferred.promise();
           },
+          enter: function(router) {
+            topics.Topics.current = topics.Topics.find(window.location.hash.split('/').get('lastObject'));
+            if (topics.Topics.current)
+              topics.Topics.current.set('__stream_notify', -1);
+          },
           exit: function(router) {
-            //topics.topic.message_topic.unsubscribe();
-            //window.location.hash.split('/').get('lastObject')
-            var topic = topics.Topics.find(window.location.hash.split('/').get('lastObject'))
-            //alert(topic);
-            topic.unsubscribe();
+            topics.Topics.current.unsubscribe();
           },
           serialize:  function(router, context){
             return {
@@ -62,18 +62,27 @@
   });
 
   topics.Topic = Ember.Object.extend({
+    _type: null,
+
+    init: function() {
+      this._publishers = Em.A();
+      this._subscribers = Em.A();
+      this._messageDetails = Em.A();
+    },
+
     slug: function() {
       var s = this.name;
       if (s[0] == '/')
         s = s.slice(1);
       return s.replace('/', '-');
     }.property(),
+
     url: function() {
       return App.urlForState('root.topics.topic', [this]);
     }.property(),
-    _type: '',
+
     type: function() {
-      if (this._type == '') {
+      if (!this._type) {
         var that = this;
         var type_service = new App.ros.Service({
           name        : '/rosapi/topic_type',
@@ -105,9 +114,6 @@
 
     __publishers_notify: 0,
     publishers: function() {
-      if(!this._publishers) {
-        this._publishers = Em.A();
-      }
       var that = this;
       var service = new App.ros.Service({
         name        : '/rosapi/publishers'
@@ -121,9 +127,7 @@
     }.property('__publishers_notify'),
 
     messageDetails: function() {
-      if (!this._messageDetails) {
-        this._messageDetails = Em.A();
-      } else if (this._type != '') {
+      if (this._type) {
         var that = this;
         var service = new App.ros.Service({
           name        : '/rosapi/message_details',
@@ -149,6 +153,7 @@
                 arraylen: item.fieldarraylen[i],
                 example: item.examples[i],
                 indent: indent ? ('indent' + indent) : '',
+                level: indent,
                 parent: parent ? parent.name : ''
               }
               if (parent) {
@@ -161,63 +166,99 @@
         });
       }
       return this._messageDetails;
-    }.property('_type'),
+    }.property('type'),
 
     unsubscribe: function() {
-      //console.log(this.get('_type'));
+      //console.log(this.name);
       this.message_topic.unsubscribe();
+      this.message_topic = null;
     },
 
-    message_topic: new App.ros.Topic({
-              //type : this._type
-            }),
-
-    
-  });
-
-topics.Topic.reopen({
-  messageStream: function() {
+    __stream_notify: 0,
+    messageStream: function() {
       if (!this._stream) {
         this._stream = Em.A();
       }
-      if (this._type != '' && this._messageDetails) {
+      if (this._type && this._messageDetails && !this.message_topic) {
         var that = this;
-        
-        this.message_topic.name = this.get('name');
-        console.log(this.message_topic);
+        this.message_topic = new App.ros.Topic({
+          name: this.name,
+          messageType: this._type
+        });
+
         this.message_topic.subscribe(function(message) {
-          // message is an instance of ros.Message.
-          
-          function createStream(message, level) {
-            var out = Em.A();
-            //console.log(message);
+          function createStream(message, level, parent) {
+            var out = new Array();
+
             Ember.A(Ember.keys(message)).forEach(function(item) {
-              if ($.isPlainObject(message[item])) {
-                out.addObjects(createStream(message[item], level+1));
+              var sorted = that._messageDetails.filterProperty('parent', parent);
+              var index = sorted.indexOf(sorted.findProperty('name', item));
+              var n = {
+                name: item,
+                level: level,
+                parent: parent,
+                index: index,
+                indent: level ? ('indent' + level) : ''
+              }
+              if ($.isPlainObject(message[item]) || Object.prototype.toString.call( message[item] ) === '[object Array]') {
+                n = $.extend(n, {
+                  val: createStream(message[item], level+1, item),
+                  hasChild: true,
+                  isArray: Object.prototype.toString.call( message[item] ) === '[object Array]'
+                });
               } else {
-                out.addObject({
-                  'name': item,
-                  'indent': level ? ('indent' + level) : '',
-                  'value': message[item]
+                n = $.extend(n, {
+                  val: message[item],
                 });
               }
+              out.push(n);
             });
+            //sorted = that._messageDetails.filterProperty('level', level);
+            out = out.sort(function(obj1, obj2) {
+              return obj1.index - obj2.index;
+            });
+            //console.log(out);
             return out;
+          };
+          var out = createStream(message, 0, '');
+
+          var list = new Array();
+          function flatten(input) {
+            input.forEach(function(item) {
+              if ($.isArray(item.val)) {
+                var t = $.extend(true, {}, item);;
+                //console.log(item)
+                t.val = '';
+                list.push(t);
+                flatten(item.val);
+              } else {
+                list.push(item);
+              }
+            })
           }
+          flatten(out);
 
-          that._stream = createStream(message, 0);
+          $('#message_stream').css('min-height', $('#message_stream').height());
+          $('#message_stream').css('min-width', $('#message_stream').width());
 
-          //console.log(that._stream);
+          that._stream.clear();
+          that._stream.pushObjects(list);
+          that.set('__stream_notify', that.get('__stream_notify') + 1);
         });
       }
       return this._stream;
-    }.property()
-})
+    }.property('type', '__stream_notify')
+  });
+
+  topics.TopicController = Ember.ObjectController.extend({
+
+  });
 
 
   topics.Topics = Ember.Object.extend();
   topics.Topics.reopenClass({
     _topics:  Em.A(),
+    current: null,
     all: function() {
       var topics_list = this._topics;
       var service = new App.ros.Service({
@@ -227,11 +268,9 @@ topics.Topic.reopen({
       service.callService(new App.ros.ServiceRequest(), function(result) {
         topics_list.clear();
         result.topics.forEach(function(item) {
-          topics_list.addObject(
-            topics.Topic.create({
-              name: item
-            })
-          );
+          var t =topics.Topic.create();
+          t.set('name', item);
+          topics_list.addObject(t);
         });
       });
 

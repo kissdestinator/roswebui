@@ -5,6 +5,15 @@ if (typeof String.prototype.startsWith != 'function') {
   };
 }
 
+Array.prototype.flatten = function flatten(){
+   var flat = [];
+   for (var i = 0, l = this.length; i < l; i++){
+       var type = Object.prototype.toString.call(this[i]).split(' ').pop().split(']').shift().toLowerCase();
+       if (type) { flat = flat.concat(/^(array|collection|arguments|object)$/.test(type) ? flatten.call(this[i]) : this[i]); }
+   }
+   return flat;
+};
+
 ModuledApplication = Ember.Application.extend({
   loadCount: 0,
   autoinit: false,
